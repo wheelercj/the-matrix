@@ -1,4 +1,4 @@
-#include "ynot/ynot.h"
+#include "../ynot/ynot/ynot.h"
 #include <ctime>
 #include <string>
 #include <vector>
