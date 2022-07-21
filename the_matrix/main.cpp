@@ -1,6 +1,7 @@
 #include "../ynot/ynot/ynot.h"
 #include <ctime>
 #include <string>
+#include <thread>
 #include <vector>
 
 struct Pixel
@@ -14,6 +15,7 @@ public:
 
 std::vector<std::vector<Pixel>> init_pixels(const ynot::Coord& window_size);
 void update_pixels(std::vector<std::vector<Pixel>>& pixels, const int& color_delta);
+void update_row(std::vector<Pixel>& row, const int y, const int& color_delta);
 std::string get_rand_char();
 ynot::Coord get_rand_coord(const ynot::Coord& window_size);
 bool update_leader(ynot::Coord& leader, const std::string& direction, const ynot::Coord& window_size);
@@ -64,8 +66,7 @@ int main()
 			Pixel& pixel = pixels[y][x];
 			pixel.green = 255;
 			pixel.str = r;
-			ynot::set_rgb(0, 255, 0);
-			ynot::print_at(x, y, r);
+			printf("\x1b[%d;%dH\x1b[38;2;%d;%d;%dm%s", y, x, pixel.red, pixel.green, pixel.blue, pixel.str.c_str());
 			if (!update_leader(leaders[i], direction, window_size))
 			{
 				leaders.erase(leaders.begin() + i);
@@ -86,24 +87,27 @@ std::vector<std::vector<Pixel>> init_pixels(const ynot::Coord& window_size)
 
 void update_pixels(std::vector<std::vector<Pixel>>& pixels, const int& color_delta)
 {
+	std::vector<std::thread> threads;
 	for (int y = 0; y < pixels.size(); y++)
+		threads.push_back(std::thread(update_row, std::ref(pixels[y]), y, std::ref(color_delta)));
+	for (int y = 0; y < pixels.size(); y++)
+		threads[y].join();
+}
+
+void update_row(std::vector<Pixel>& row, const int y, const int& color_delta)
+{
+	for (int x = 0; x < row.size(); x++)
 	{
-		std::vector<Pixel>& row = pixels[y];
-		for (int x = 0; x < row.size(); x++)
+		Pixel& pixel = row[x];
+		if (pixel.green == 0)
+			continue;
+		pixel.green -= color_delta;
+		if (pixel.green <= 0)
 		{
-			Pixel& pixel = row[x];
-			if (pixel.green == 0)
-				continue;
-			pixel.green -= color_delta;
-			if (pixel.green <= 0)
-			{
-				pixel.green = 0;
-				pixel.str = " ";
-			}
-			else
-				ynot::set_rgb(0, pixel.green, 0);
-			ynot::print_at(x, y, pixel.str);
+			pixel.green = 0;
+			pixel.str = " ";
 		}
+		printf("\x1b[%d;%dH\x1b[38;2;%d;%d;%dm%s", y, x, pixel.red, pixel.green, pixel.blue, pixel.str.c_str());
 	}
 }
 
