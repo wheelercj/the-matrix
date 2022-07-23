@@ -66,7 +66,13 @@ int main()
 			Pixel& pixel = pixels[y][x];
 			pixel.green = 255;
 			pixel.str = r;
-			printf("\x1b[%d;%dH\x1b[38;2;%d;%d;%dm%s", y, x, pixel.red, pixel.green, pixel.blue, pixel.str.c_str());
+			
+			{
+				std::osyncstream sout(std::cout);
+				ynot::set_rgb(pixel.red, pixel.green, pixel.blue, sout);
+				ynot::print_at(x, y, pixel.str, sout);
+			}
+
 			if (!update_leader(leaders[i], direction, window_size))
 			{
 				leaders.erase(leaders.begin() + i);
@@ -107,7 +113,12 @@ void update_row(std::vector<Pixel>& row, const int y, const int& color_delta)
 			pixel.green = 0;
 			pixel.str = " ";
 		}
-		printf("\x1b[%d;%dH\x1b[38;2;%d;%d;%dm%s", y, x, pixel.red, pixel.green, pixel.blue, pixel.str.c_str());
+
+		{
+			std::osyncstream sout(std::cout);
+			ynot::set_rgb(pixel.red, pixel.green, pixel.blue, sout);
+			ynot::print_at(x, y, pixel.str, sout);
+		}
 	}
 }
 
