@@ -25,6 +25,8 @@ int main()
 	ynot::save_cursor_location();
 	ynot::alternate_screen_buffer();
 	ynot::set_cursor_style(ynot::CursorStyle::hidden);
+	ynot::reset_on_keyboard_interrupt();
+
 	srand((unsigned)time(0));
 	const ynot::Coord window_size = ynot::get_window_size();
 	std::vector<std::vector<Pixel>> pixels = init_pixels(window_size);
@@ -67,11 +69,8 @@ int main()
 			pixel.green = 255;
 			pixel.str = r;
 			
-			{
-				std::osyncstream sout(std::cout);
-				ynot::set_rgb(pixel.red, pixel.green, pixel.blue, sout);
-				ynot::print_at(x, y, pixel.str, sout);
-			}
+			std::string coord_str = ynot::ret_set_cursor_coords(x, y);
+			ynot::print_rgb(pixel.red, pixel.green, pixel.blue, coord_str + pixel.str);
 
 			if (!update_leader(leaders[i], direction, window_size))
 			{
@@ -114,11 +113,8 @@ void update_row(std::vector<Pixel>& row, const int y, const int& color_delta)
 			pixel.str = " ";
 		}
 
-		{
-			std::osyncstream sout(std::cout);
-			ynot::set_rgb(pixel.red, pixel.green, pixel.blue, sout);
-			ynot::print_at(x, y, pixel.str, sout);
-		}
+		std::string coord_str = ynot::ret_set_cursor_coords(x, y);
+		ynot::print_rgb(pixel.red, pixel.green, pixel.blue, coord_str + pixel.str);
 	}
 }
 
